@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
 <title>Jamjoom Pharma Ophthalmology Portal</title>
 <style>
-:root{--navy:#1F3864;--orange:#ED7D31;--bg:#F5F7FA}
+:root{--navy:#1F3864;--orange:#ED7D31;--bg:#F5F7FA;--line:#dbe1ec;--muted:#5d6b85;--neg:#c0392b}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);font:14px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
 body{display:flex;flex-direction:column}
@@ -18,39 +19,131 @@ nav button{appearance:none;border:0;background:transparent;color:#cdd6ea;font:60
 nav button:hover{color:#fff;background:rgba(255,255,255,.06)}
 nav button[aria-selected=true]{color:#fff;border-bottom-color:var(--orange)}
 nav button:focus-visible{outline:2px solid var(--orange);outline-offset:-2px}
+#logout{appearance:none;align-self:center;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font:500 12px/1 inherit;font-family:inherit;padding:7px 11px;border-radius:6px;cursor:pointer}
+#logout:hover{background:rgba(255,255,255,.1)}
 main{flex:1;position:relative;min-height:0}
 iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
 iframe.on{display:block}
+/* login */
+#login{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:16px;background:linear-gradient(160deg,#1F3864 0%,#2c4f8a 100%)}
+.card{width:100%;max-width:360px;background:#fff;border-radius:12px;padding:28px 26px 22px;box-shadow:0 18px 50px rgba(0,0,0,.25);border-top:4px solid var(--orange)}
+.card h1{margin:0 0 4px;font-size:19px;color:var(--navy)}
+.card p.sub{margin:0 0 20px;color:var(--muted);font-size:12.5px}
+.card label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:0 0 5px}
+.card input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;font:15px inherit;font-family:inherit;margin-bottom:14px;background:#fbfcfe}
+.card input:focus{outline:2px solid var(--navy);outline-offset:-1px;border-color:var(--navy)}
+.card button{width:100%;padding:11px;border:0;border-radius:7px;background:var(--navy);color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer}
+.card button:hover{background:#18305a}
+.card button:disabled{opacity:.6;cursor:wait}
+#err{min-height:18px;margin:10px 0 0;color:var(--neg);font-size:12.5px}
+.forgot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);text-align:center}
+.forgot a{color:var(--navy);font-weight:600}
+.forgot small{display:block;margin-top:5px;font-size:11.5px;word-break:break-all}
+body.locked header,body.locked main{visibility:hidden}
 @media (max-width:640px){
   header{gap:0;padding:0 8px}
-  .brand{width:100%;padding:8px 4px 2px}
-  nav{margin-left:0;width:100%}
+  .brand{flex:1;padding:8px 4px 2px}
+  nav{margin-left:0;width:100%;order:3}
   nav button{padding:11px 10px 10px;font-size:12.5px}
 }
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="login">
+  <form class="card" id="lf" autocomplete="on">
+    <h1>Jamjoom Pharma · Ophthalmology</h1>
+    <p class="sub">Sign in to open the sales dashboards.</p>
+    <label for="u">Username</label>
+    <input id="u" name="username" autocomplete="username" inputmode="numeric" required>
+    <label for="p">Password</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <button id="go" type="submit">Sign in</button>
+    <p id="err" role="alert"></p>
+    <div class="forgot">
+      <a id="rec" href="#">Forgot username or password?</a>
+      <small>Email <span id="recmail"></span> to request access.</small>
+    </div>
+  </form>
+</div>
+
 <header>
   <div class="brand"><b>Jamjoom Pharma · Ophthalmology</b><span id="sub">JP Ophtha Sales</span></div>
   <nav role="tablist" aria-label="Dashboards">
-    <button role="tab" id="t-sales" data-tab="sales" aria-selected="true">JP Ophtha Sales</button>
-    <button role="tab" id="t-chain" data-tab="chain" aria-selected="false">Chain Sell-Out</button>
-    <button role="tab" id="t-direct" data-tab="direct" aria-selected="false">Direct Customers Sell-Out</button>
+    <button role="tab" data-tab="sales" aria-selected="true">JP Ophtha Sales</button>
+    <button role="tab" data-tab="chain" aria-selected="false">Chain Sell-Out</button>
+    <button role="tab" data-tab="direct" aria-selected="false">Direct Customers Sell-Out</button>
   </nav>
+  <button id="logout" type="button">Sign out</button>
 </header>
 <main>
   <iframe id="f-sales" title="JP Ophtha Sales" data-src="sales.html"></iframe>
   <iframe id="f-chain" title="Chain Sell-Out Dashboard" data-src="chain.html"></iframe>
   <iframe id="f-direct" title="JP Direct Customers Sell-Out Dashboard" data-src="direct.html"></iframe>
 </main>
+
 <script>
+const SALT='9om5D55hPkAf6TK2pOm5Hw==', ITER=600000, CHECK='x+HJZdP0hU8EaKBooVk9BXSh54KCk2yhtmwy4gHHOGhEvV/ZnxuQcA==', RECOVERY='mohammed.bargisy@jamjoompharma.com';
+const SKEY='jp-portal-session';
+const $=id=>document.getElementById(id);
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const unhex=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16))).buffer;
+let RAW=null; // derived key bytes, kept in memory only for this tab
+
+// recovery link
+$('recmail').textContent=RECOVERY;
+$('rec').href='mailto:'+RECOVERY+'?subject='+encodeURIComponent('Ophthalmology Portal – access recovery')+
+  '&body='+encodeURIComponent('Hello,\n\nI could not sign in to the Jamjoom Pharma Ophthalmology Portal. Please send me my username and password.\n\nName:\nMobile:\n\nThank you.');
+
+async function derive(user,pass){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(user+':'+pass),'PBKDF2',false,['deriveBits']);
+  return crypto.subtle.deriveBits({name:'PBKDF2',salt:unb64(SALT),iterations:ITER,hash:'SHA-256'},base,256);
+}
+async function verify(raw){
+  try{
+    const k=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);
+    const c=unb64(CHECK);
+    const out=await crypto.subtle.decrypt({name:'AES-GCM',iv:c.slice(0,12)},k,c.slice(12));
+    return new TextDecoder().decode(out)==='JP-OPHTHA-OK';
+  }catch(e){return false}
+}
+function unlock(raw){
+  RAW=raw;
+  try{sessionStorage.setItem(SKEY,hex(raw))}catch(e){}
+  document.body.classList.remove('locked');
+  $('login').remove();
+  show(location.hash.slice(1)||'sales');
+}
+
+$('lf').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!window.crypto||!crypto.subtle){$('err').textContent='This browser cannot open the portal. Please use an up-to-date Chrome, Edge or Safari.';return}
+  $('go').disabled=true;$('go').textContent='Checking…';$('err').textContent='';
+  const raw=await derive($('u').value.trim(),$('p').value);
+  if(await verify(raw)) unlock(raw);
+  else{$('err').textContent='Incorrect username or password.';$('p').value='';$('p').focus();$('go').disabled=false;$('go').textContent='Sign in'}
+});
+$('logout').addEventListener('click',()=>{
+  try{sessionStorage.removeItem(SKEY)}catch(e){}
+  location.href=location.pathname;
+});
+
+// hand the key to each dashboard frame when it asks for it
+addEventListener('message',e=>{
+  if(!RAW||!e.data||e.data.type!=='jp-ready')return;
+  const f=[...document.querySelectorAll('iframe')].find(x=>x.contentWindow===e.source);
+  if(f) e.source.postMessage({type:'jp-key',key:RAW.slice(0)},'*');
+});
+
+// tabs
 const tabs=[...document.querySelectorAll('nav button')];
 function show(name){
-  if(!document.getElementById('f-'+name)) name='sales';
-  tabs.forEach(b=>{const on=b.dataset.tab===name;b.setAttribute('aria-selected',on);if(on)document.getElementById('sub').textContent=b.textContent;});
+  if(!RAW)return;
+  if(!$('f-'+name)) name='sales';
+  tabs.forEach(b=>{const on=b.dataset.tab===name;b.setAttribute('aria-selected',on);if(on)$('sub').textContent=b.textContent});
   document.querySelectorAll('iframe').forEach(f=>{
     const on=f.id==='f-'+name;
-    if(on&&!f.src) f.src=f.dataset.src; // load each dashboard the first time its tab opens
+    if(on&&!f.src) f.src=f.dataset.src;
     f.classList.toggle('on',on);
   });
   if(location.hash.slice(1)!==name) history.replaceState(null,'','#'+name);
@@ -62,7 +155,13 @@ document.querySelector('nav').addEventListener('keydown',e=>{
   if(d){const n=tabs[(i+d+tabs.length)%tabs.length];n.focus();show(n.dataset.tab)}
 });
 addEventListener('hashchange',()=>show(location.hash.slice(1)));
-show(location.hash.slice(1)||'sales');
+
+// stay signed in for this browser tab after a refresh
+(async()=>{
+  let s=null;try{s=sessionStorage.getItem(SKEY)}catch(e){}
+  if(s&&/^[0-9a-f]{64}$/.test(s)){const raw=unhex(s);if(await verify(raw)){unlock(raw);return}}
+  $('u').focus();
+})();
 </script>
 </body>
 </html>
