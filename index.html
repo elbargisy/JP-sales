@@ -82,7 +82,7 @@ body.locked header,body.locked main{visibility:hidden}
 </main>
 
 <script>
-const SALT='myiHv5UNm/czJPIeIawaEA==', ITER=600000, CHECK='e/O1hHZJDKkB0gD4Bs1IOzKRJbMxgLWmDC6yXcOsW5Ddw2hMp5R9Xg==', RECOVERY='mohammed.bargisy@jamjoompharma.com';
+const BUILD='20261110091948', SALT='/FaK8c05jIIsDk9XxIzBeg==', ITER=600000, CHECK='weC8lzGIz7Tscs/V8GFBFivwYcjNpDb9jIVS6R7yf4o31jZOCLVoNQ==', RECOVERY='mohammed.bargisy@jamjoompharma.com';
 const SKEY='jp-portal-session';
 const $=id=>document.getElementById(id);
 const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -143,7 +143,7 @@ function show(name){
   tabs.forEach(b=>{const on=b.dataset.tab===name;b.setAttribute('aria-selected',on);if(on)$('sub').textContent=b.textContent});
   document.querySelectorAll('iframe').forEach(f=>{
     const on=f.id==='f-'+name;
-    if(on&&!f.src) f.src=f.dataset.src;
+    if(on&&!f.src) f.src=f.dataset.src+'?v='+BUILD; // version tag so browsers never mix old and new files
     f.classList.toggle('on',on);
   });
   if(location.hash.slice(1)!==name) history.replaceState(null,'','#'+name);
